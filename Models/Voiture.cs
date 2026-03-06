@@ -48,6 +48,6 @@ namespace ExpressVoitures.Models
 
         public Vente Vente { get; set; }
 
-        public List<Reparation> Reparations { get; set; }
+        public List<Reparation> Reparations { get; set; } = new();
     }
 }

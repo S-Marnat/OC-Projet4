@@ -14,7 +14,7 @@ namespace ExpressVoitures.Models
         public int IdMarque {  get; set; }
         public Marque Marque { get; set; }
 
-        public List<Voiture> Voitures { get; set; }
-        public List<Finition> Finitions { get; set; }
+        public List<Voiture> Voitures { get; set; } = new();
+        public List<Finition> Finitions { get; set; } = new();
     }
 }

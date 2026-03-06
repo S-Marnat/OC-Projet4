@@ -11,7 +11,7 @@ namespace ExpressVoitures.Models
         public DateTime Date { get; set; }
 
 
-        public int IdVoiture { get; set; }
+        public int? IdVoiture { get; set; }
         public Voiture Voiture { get; set; }
     }
 }

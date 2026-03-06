@@ -11,7 +11,7 @@ namespace ExpressVoitures.Models
         public string Nom { get; set; }
 
 
-        public List<Voiture> Voitures { get; set; }
-        public List<Modele> Modeles { get; set; }
+        public List<Voiture> Voitures { get; set; } = new();
+        public List<Modele> Modeles { get; set; } = new();
     }
 }

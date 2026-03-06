@@ -4,19 +4,16 @@ using ExpressVoitures.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace ExpressVoitures.Data.Migrations
+namespace ExpressVoitures.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260306120802_MigrationInitiale")]
-    partial class MigrationInitiale
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,9 +77,6 @@ namespace ExpressVoitures.Data.Migrations
                     b.Property<int>("IdMarque")
                         .HasColumnType("int");
 
-                    b.Property<int>("MarqueId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Nom")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -90,7 +84,7 @@ namespace ExpressVoitures.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MarqueId");
+                    b.HasIndex("IdMarque");
 
                     b.ToTable("Modeles");
                 });
@@ -134,13 +128,14 @@ namespace ExpressVoitures.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("IdVoiture")
+                    b.Property<int?>("IdVoiture")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IdVoiture")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IdVoiture] IS NOT NULL");
 
                     b.ToTable("Ventes");
                 });
@@ -194,9 +189,6 @@ namespace ExpressVoitures.Data.Migrations
                     b.Property<int>("MarqueId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ModeleId")
-                        .HasColumnType("int");
-
                     b.Property<double>("PrixAchat")
                         .HasColumnType("float");
 
@@ -207,9 +199,9 @@ namespace ExpressVoitures.Data.Migrations
 
                     b.HasIndex("FinitionId");
 
-                    b.HasIndex("MarqueId");
+                    b.HasIndex("IdModele");
 
-                    b.HasIndex("ModeleId");
+                    b.HasIndex("MarqueId");
 
                     b.ToTable("Voitures");
                 });
@@ -421,7 +413,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("ExpressVoitures.Models.Modele", "Modele")
                         .WithMany("Finitions")
                         .HasForeignKey("ModeleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Modele");
@@ -431,7 +423,7 @@ namespace ExpressVoitures.Data.Migrations
                 {
                     b.HasOne("ExpressVoitures.Models.Marque", "Marque")
                         .WithMany("Modeles")
-                        .HasForeignKey("MarqueId")
+                        .HasForeignKey("IdMarque")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -443,7 +435,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("ExpressVoitures.Models.Voiture", "Voiture")
                         .WithMany("Reparations")
                         .HasForeignKey("VoitureId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Voiture");
@@ -454,8 +446,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("ExpressVoitures.Models.Voiture", "Voiture")
                         .WithOne("Vente")
                         .HasForeignKey("ExpressVoitures.Models.Vente", "IdVoiture")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Voiture");
                 });
@@ -465,19 +456,19 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("ExpressVoitures.Models.Finition", "Finition")
                         .WithMany("Voitures")
                         .HasForeignKey("FinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ExpressVoitures.Models.Modele", "Modele")
+                        .WithMany("Voitures")
+                        .HasForeignKey("IdModele")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("ExpressVoitures.Models.Marque", "Marque")
                         .WithMany("Voitures")
                         .HasForeignKey("MarqueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ExpressVoitures.Models.Modele", "Modele")
-                        .WithMany("Voitures")
-                        .HasForeignKey("ModeleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Finition");
@@ -492,7 +483,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -501,7 +492,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -510,7 +501,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -519,13 +510,13 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -534,7 +525,7 @@ namespace ExpressVoitures.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
