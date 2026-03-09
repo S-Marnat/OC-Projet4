@@ -17,26 +17,54 @@ namespace ExpressVoitures.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Relation Marque-Modele (1-N)
+            // Relation Marque-Modele - Supprimer une marque supprime ses modèles
             modelBuilder.Entity<Marque>()
-                .HasMany(m => m.Modeles)
+                .HasMany(ma => ma.Modeles)
                 .WithOne(mo => mo.Marque)
                 .HasForeignKey(mo => mo.IdMarque)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation Modele-Finition - Supprimer un modèle supprime ses finitions
+            modelBuilder.Entity<Modele>()
+                .HasMany(mo => mo.Finitions)
+                .WithOne(ma => ma.Modele)
+                .HasForeignKey(ma => ma.IdModele)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation Marque-Voiture - On garde les voitures même si la marque disparaît
+            modelBuilder.Entity<Marque>()
+                .HasMany(ma => ma.Voitures)
+                .WithOne(vo => vo.Marque)
+                .HasForeignKey(vo => vo.IdMarque)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relation Modele-Voiture (1-N)
+            // Relation Modele-Voiture - On garde les voitures même si le modèle disparaît
             modelBuilder.Entity<Modele>()
                 .HasMany(mo => mo.Voitures)
-                .WithOne(v => v.Modele)
-                .HasForeignKey(v => v.IdModele)
+                .WithOne(vo => vo.Modele)
+                .HasForeignKey(vo => vo.IdModele)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relation Voiture-Vente (1-0..1)
+            // Relation Finition-Voiture - On garde les voitures même si la finition disparaît
+            modelBuilder.Entity<Finition>()
+                .HasMany(f => f.Voitures)
+                .WithOne(vo => vo.Finition)
+                .HasForeignKey(vo => vo.IdFinition)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relation Voiture-Réparation - Supprimer une voiture supprime ses réparations éventuelles
             modelBuilder.Entity<Voiture>()
-                .HasOne(v => v.Vente)
+                .HasMany(vo => vo.Reparations)
+                .WithOne(r => r.Voiture)
+                .HasForeignKey(r => r.IdVoiture)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation Voiture-Vente - Supprimer une voiture supprime sa vente éventuelle
+            modelBuilder.Entity<Voiture>()
+                .HasOne(vo => vo.Vente)
                 .WithOne(ve => ve.Voiture)
                 .HasForeignKey<Vente>(ve => ve.IdVoiture)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
