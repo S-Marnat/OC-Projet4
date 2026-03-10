@@ -14,6 +14,6 @@ namespace ExpressVoitures.Models
 
 
         public int IdVoiture { get; set; }
-        public Voiture Voiture { get; set; }
+        public Voiture? Voiture { get; set; }
     }
 }

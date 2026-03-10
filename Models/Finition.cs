@@ -12,7 +12,7 @@ namespace ExpressVoitures.Models
 
 
         public int IdModele { get; set; }
-        public Modele Modele { get; set; }
+        public Modele? Modele { get; set; }
 
         public List<Voiture> Voitures { get; set; } = new();
     }

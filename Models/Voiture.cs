@@ -2,7 +2,7 @@
 
 namespace ExpressVoitures.Models
 {
-    public class Voiture
+    public class Voiture : IValidatableObject
     {
         public int Id { get; set; }
 
@@ -11,15 +11,12 @@ namespace ExpressVoitures.Models
         public string CodeVin { get; set; }
 
         [Required(ErrorMessage = "Veuillez indiquer l'année de la voiture")]
-        [Range(1900, 2100, ErrorMessage = "Veuillez indiquer une année valide")]
         public int Annee { get; set; }
 
-        [Required(ErrorMessage = "Veuillez joindre une image de la voiture")]
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
-        [Required(ErrorMessage = "Veuillez indiquer une descritpion de la voiture")]
         [StringLength(2000)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required(ErrorMessage = "Veuillez indiquer la date d'achat de la voiture")]
         [DataType(DataType.Date)]
@@ -28,26 +25,44 @@ namespace ExpressVoitures.Models
         [Required(ErrorMessage = "Veuillez indiquer le prix d'achat de la voiture")]
         public double PrixAchat { get; set; }
 
+        public bool VoitureReparee { get; set; }
+
         [DataType(DataType.Date)]
         public DateTime? DateMiseEnVente { get; set; }
 
         public double? PrixMiseEnVente { get; set; }
 
         public bool AnnoncePubliee { get; set; }
+        public bool VoitureVendue { get; set; }
 
 
 
         public int IdMarque { get; set; }
-        public Marque Marque { get; set; }
+        public Marque? Marque { get; set; }
 
         public int IdModele { get; set; }
-        public Modele Modele { get; set; }
+        public Modele? Modele { get; set; }
 
         public int IdFinition { get; set; }
-        public Finition Finition { get; set; }
+        public Finition? Finition { get; set; }
 
-        public Vente Vente { get; set; }
+        public Vente? Vente { get; set; }
 
         public List<Reparation> Reparations { get; set; } = new();
+
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            int min = 1990;
+            int max = DateTime.Now.Year;
+
+            if (Annee < min || Annee > max)
+            {
+                yield return new ValidationResult(
+                    $"Veuillez indiquer une année entre {min} et {max}.",
+                    new[] { nameof(Annee) }
+                );
+            }
+        }
     }
 }

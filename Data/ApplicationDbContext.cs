@@ -31,21 +31,21 @@ namespace ExpressVoitures.Data
                 .HasForeignKey(ma => ma.IdModele)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Relation Marque-Voiture - On garde les voitures même si la marque disparaît
+            // Relation Marque-Voiture - On ne peut pas supprimer une marque si une voiture lui est associée
             modelBuilder.Entity<Marque>()
                 .HasMany(ma => ma.Voitures)
                 .WithOne(vo => vo.Marque)
                 .HasForeignKey(vo => vo.IdMarque)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relation Modele-Voiture - On garde les voitures même si le modèle disparaît
+            // Relation Modele-Voiture - On ne peut pas supprimer un modèle si une voiture lui est associée
             modelBuilder.Entity<Modele>()
                 .HasMany(mo => mo.Voitures)
                 .WithOne(vo => vo.Modele)
                 .HasForeignKey(vo => vo.IdModele)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Relation Finition-Voiture - On garde les voitures même si la finition disparaît
+            // Relation Finition-Voiture - On ne peut pas supprimer une finition si une voiture lui est associée
             modelBuilder.Entity<Finition>()
                 .HasMany(f => f.Voitures)
                 .WithOne(vo => vo.Finition)
