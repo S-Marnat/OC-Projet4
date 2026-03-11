@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExpressVoitures.Data;
+using ExpressVoitures.Models;
+using Humanizer.Localisation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ExpressVoitures.Data;
-using ExpressVoitures.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExpressVoitures.Controllers
 {
@@ -48,12 +49,10 @@ namespace ExpressVoitures.Controllers
         }
 
         // GET: Voitures/Create
-        public IActionResult Create()
+        public IActionResult Create(int? idMarque, int? idModele)
         {
             ListeAnnees();
-            ViewData["IdFinition"] = new SelectList(_context.Finitions, "Id", "Nom");
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom");
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom");
+            ListesMarquesModelesFinitions(idMarque, idModele);
             return View();
         }
 
@@ -64,6 +63,18 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CodeVin,Annee,Image,Description,DateAchat,PrixAchat,VoitureReparee,DateMiseEnVente,PrixMiseEnVente,AnnoncePubliee,VoitureVendue,IdMarque,IdModele,IdFinition")] Voiture voiture)
         {
+            bool voitureExiste;
+            voitureExiste = _context.Voitures.Any(v => v.CodeVin == voiture.CodeVin);
+            if (voitureExiste)
+            {
+                ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+            }
+
+            if (voiture.DateMiseEnVente < voiture.DateAchat)
+            {
+                ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(voiture);
@@ -72,9 +83,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ViewData["IdFinition"] = new SelectList(_context.Finitions, "Id", "Nom", voiture.IdFinition);
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", voiture.IdMarque);
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", voiture.IdModele);
+            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
             return View(voiture);
         }
 
@@ -93,9 +102,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ViewData["IdFinition"] = new SelectList(_context.Finitions, "Id", "Nom", voiture.IdFinition);
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", voiture.IdMarque);
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", voiture.IdModele);
+            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
             return View(voiture);
         }
 
@@ -109,6 +116,18 @@ namespace ExpressVoitures.Controllers
             if (id != voiture.Id)
             {
                 return NotFound();
+            }
+
+            bool voitureExiste;
+            voitureExiste = _context.Voitures.Any(v => v.CodeVin == voiture.CodeVin && v.Id != voiture.Id);
+            if (voitureExiste)
+            {
+                ModelState.AddModelError("", "Une voiture portant ce code VIN existe déjà.");
+            }
+
+            if (voiture.DateMiseEnVente < voiture.DateAchat)
+            {
+                ModelState.AddModelError("", "La date de mise en vente ne peut pas être antérieure à la date d'achat de la voiture.");
             }
 
             if (ModelState.IsValid)
@@ -133,9 +152,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ViewData["IdFinition"] = new SelectList(_context.Finitions, "Id", "Nom", voiture.IdFinition);
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", voiture.IdMarque);
-            ViewData["IdModele"] = new SelectList(_context.Modeles, "Id", "Nom", voiture.IdModele);
+            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
             return View(voiture);
         }
 
@@ -190,7 +207,43 @@ namespace ExpressVoitures.Controllers
                 .Reverse()
                 .ToList();
 
-            ViewBag.Annees = new SelectList(annees);
+            ViewData["Annees"] = new SelectList(annees);
+        }
+
+        private void ListesMarquesModelesFinitions(int? idMarque, int? idModele)
+        {
+            // Marques
+            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", idMarque);
+
+            // Modèles
+            if (idMarque == null)
+            {
+                ViewData["IdModele"] = new SelectList(Enumerable.Empty<Modele>(), "Id", "Nom");
+            }
+            else
+            {
+                var modeles = _context.Modeles
+                    .Where(m => m.IdMarque == idMarque)
+                    .ToList();
+
+                ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom", idModele);
+            }
+
+            // Finitions
+            if (idModele == null)
+            {
+                ViewData["IdFinition"] = new SelectList(Enumerable.Empty<Finition>(), "Id", "Nom");
+            }
+            else
+            {
+                var finitions = _context.Finitions
+                    .Where(f => f.IdModele == idModele)
+                    .ToList();
+
+                ViewData["IdFinition"] = new SelectList(finitions, "Id", "Nom");
+            }
+
+            // Solution à revoir : les pages se rechargent en effaçant les données rentrées dans les autres champs...
         }
     }
 }

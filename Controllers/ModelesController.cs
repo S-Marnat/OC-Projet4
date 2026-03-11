@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using ExpressVoitures.Data;
+using ExpressVoitures.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using ExpressVoitures.Data;
-using ExpressVoitures.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ExpressVoitures.Controllers
 {
@@ -59,6 +60,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Nom,IdMarque")] Modele modele)
         {
+            bool modeleExiste;
+            modeleExiste = _context.Modeles.Any(m => m.Nom == modele.Nom && m.IdMarque == modele.IdMarque);
+            if (modeleExiste)
+            {
+                ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
+            }
+            
             if (ModelState.IsValid)
             {
                 _context.Add(modele);
@@ -98,6 +106,13 @@ namespace ExpressVoitures.Controllers
                 return NotFound();
             }
 
+            bool modeleExiste;
+            modeleExiste = _context.Modeles.Any(m => m.Nom == modele.Nom && m.IdMarque == modele.IdMarque && m.Id != modele.Id);
+            if (modeleExiste)
+            {
+                ModelState.AddModelError("", "Un modèle portant ce nom existe déjà pour cette marque.");
+            }
+            
             if (ModelState.IsValid)
             {
                 try

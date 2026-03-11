@@ -59,6 +59,13 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Nom,IdModele")] Finition finition)
         {
+            bool finitionExiste;
+            finitionExiste = _context.Finitions.Any(f => f.Nom == finition.Nom && f.IdModele == finition.IdModele);
+            if (finitionExiste)
+            {
+                ModelState.AddModelError("", "Une finition portant ce nom existe déjà pour ce modèle.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(finition);
@@ -96,6 +103,13 @@ namespace ExpressVoitures.Controllers
             if (id != finition.Id)
             {
                 return NotFound();
+            }
+
+            bool finitionExiste;
+            finitionExiste = _context.Finitions.Any(f => f.Nom == finition.Nom && f.IdModele == finition.IdModele && f.Id != finition.Id);
+            if (finitionExiste)
+            {
+                ModelState.AddModelError("", "Une finition portant ce nom existe déjà pour ce modèle.");
             }
 
             if (ModelState.IsValid)

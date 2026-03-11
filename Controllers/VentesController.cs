@@ -59,6 +59,22 @@ namespace ExpressVoitures.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Date,IdVoiture")] Vente vente)
         {
+            bool venteExiste;
+            venteExiste = _context.Ventes.Any(v => v.IdVoiture == vente.IdVoiture);
+            if (venteExiste)
+            {
+                ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
+            }
+
+            var voitureVendue = _context.Voitures.FirstOrDefault(v => v.Id == vente.IdVoiture);
+            if (voitureVendue != null)
+            {
+                if (vente.Date < voitureVendue.DateAchat)
+                {
+                    ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(vente);
@@ -96,6 +112,22 @@ namespace ExpressVoitures.Controllers
             if (id != vente.Id)
             {
                 return NotFound();
+            }
+
+            bool venteExiste;
+            venteExiste = _context.Ventes.Any(v => v.IdVoiture == vente.IdVoiture && v.Id != vente.Id);
+            if (venteExiste)
+            {
+                ModelState.AddModelError("", "Une vente a déjà été ajoutée pour cette voiture.");
+            }
+
+            var voitureVendue = _context.Voitures.FirstOrDefault(v => v.Id == vente.IdVoiture);
+            if (voitureVendue != null)
+            {
+                if (vente.Date < voitureVendue.DateAchat)
+                {
+                    ModelState.AddModelError("", "La date de vente ne peut pas être antérieure à la date d'achat de la voiture.");
+                }
             }
 
             if (ModelState.IsValid)
