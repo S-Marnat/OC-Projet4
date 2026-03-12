@@ -52,7 +52,7 @@ namespace ExpressVoitures.Controllers
         public IActionResult Create(int? idMarque, int? idModele)
         {
             ListeAnnees();
-            ListesMarquesModelesFinitions(idMarque, idModele);
+            ListesMarquesModelesFinitions();
             return View();
         }
 
@@ -83,7 +83,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
+            ListesMarquesModelesFinitions();
             return View(voiture);
         }
 
@@ -102,7 +102,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
+            ListesMarquesModelesFinitions();
             return View(voiture);
         }
 
@@ -152,7 +152,7 @@ namespace ExpressVoitures.Controllers
             }
 
             ListeAnnees();
-            ListesMarquesModelesFinitions(voiture.IdMarque, voiture.IdModele);
+            ListesMarquesModelesFinitions();
             return View(voiture);
         }
 
@@ -210,40 +210,49 @@ namespace ExpressVoitures.Controllers
             ViewData["Annees"] = new SelectList(annees);
         }
 
-        private void ListesMarquesModelesFinitions(int? idMarque, int? idModele)
+        private void ListesMarquesModelesFinitions()
         {
-            // Marques
-            ViewData["IdMarque"] = new SelectList(_context.Marques, "Id", "Nom", idMarque);
+            // Charger toutes les marques
+            var marques = _context.Marques.ToList();
+            ViewBag.Marques = new SelectList(marques, "Id", "Nom");
 
-            // Modèles
-            if (idMarque == null)
-            {
-                ViewData["IdModele"] = new SelectList(Enumerable.Empty<Modele>(), "Id", "Nom");
-            }
-            else
+            // Construire le dictionnaire : Modèles par marque
+            var modelesParMarque = new Dictionary<int, List<SelectListItem>>();
+
+            foreach (var marque in marques)
             {
                 var modeles = _context.Modeles
-                    .Where(m => m.IdMarque == idMarque)
+                    .Where(m => m.IdMarque == marque.Id)
+                    .Select(m => new SelectListItem
+                    {
+                        Value = m.Id.ToString(),
+                        Text = m.Nom
+                    })
                     .ToList();
 
-                ViewData["IdModele"] = new SelectList(modeles, "Id", "Nom", idModele);
+                modelesParMarque[marque.Id] = modeles;
             }
 
-            // Finitions
-            if (idModele == null)
-            {
-                ViewData["IdFinition"] = new SelectList(Enumerable.Empty<Finition>(), "Id", "Nom");
-            }
-            else
+            ViewBag.ModelesParMarque = modelesParMarque;
+
+            // Construire le dictionnaire : Finitions par modèle
+            var finitionsParModele = new Dictionary<int, List<SelectListItem>>();
+
+            foreach (var modele in _context.Modeles.ToList())
             {
                 var finitions = _context.Finitions
-                    .Where(f => f.IdModele == idModele)
+                    .Where(f => f.IdModele == modele.Id)
+                    .Select(f => new SelectListItem
+                    {
+                        Value = f.Id.ToString(),
+                        Text = f.Nom
+                    })
                     .ToList();
 
-                ViewData["IdFinition"] = new SelectList(finitions, "Id", "Nom");
+                finitionsParModele[modele.Id] = finitions;
             }
 
-            // Solution à revoir : les pages se rechargent en effaçant les données rentrées dans les autres champs...
+            ViewBag.FinitionsParModele = finitionsParModele;
         }
     }
 }

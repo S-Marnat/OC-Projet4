@@ -72,29 +72,19 @@
             </div>
             <div class="form-group">
                 <label asp-for="IdMarque" class="control-label"></label>
-                <select asp-for="IdMarque"
-                        class="form-control"
-                        asp-items="ViewBag.IdMarque"
-                        onchange="location.href='@Url.Action("Create", "Voitures")?idMarque=' + this.value">
-                    <option value="">Sélectionnez d'abord une marque</option>
+                <select asp-for="IdMarque" id="marqueSelect" class="form-control" asp-items="ViewBag.Marques">
+                    <option value="">Sélectionnez une marque</option>
                 </select>
                 <span asp-validation-for="IdMarque" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdModele" class="control-label"></label>
-                <select asp-for="IdModele"
-                        class="form-control"
-                        asp-items="ViewBag.IdModele"
-                        onchange="location.href='@Url.Action("Create", "Voitures")?idMarque=' + document.getElementById('IdMarque').value + '&idModele=' + this.value">
-                    <option value="">Sélectionnez ensuite un modèle</option>
-                </select>
+                <select asp-for="IdModele" id="modeleSelect" class="form-control" asp-items="ViewBag.Modeles"></select>
                 <span asp-validation-for="IdModele" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdFinition" class="control-label"></label>
-                <select asp-for="IdFinition" class="form-control" asp-items="ViewBag.IdFinition">
-                    <option value="">Sélectionnez enfin une finition</option>
-                </select>
+                <select id="finitionSelect" asp-for="IdFinition" class="form-control" asp-items="ViewBag.Finitions"></select>
                 <span asp-validation-for="IdFinition" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -110,4 +100,76 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const modelesParMarque = @Html.Raw(Json.Serialize(ViewBag.ModelesParMarque));
+            const finitionsParModele = @Html.Raw(Json.Serialize(ViewBag.FinitionsParModele));
+
+            const marqueSelect = document.getElementById('marqueSelect');
+            const modeleSelect = document.getElementById('modeleSelect');
+            const finitionSelect = document.getElementById('finitionSelect');
+
+            // Pré-remplir les modèles si une marque est déjà sélectionnée
+            if (marqueSelect.value) {
+                let marqueId = marqueSelect.value;
+                let listeModeles = modelesParMarque[marqueId];
+
+                modeleSelect.innerHTML = "";
+                listeModeles.forEach(m => {
+                    modeleSelect.appendChild(new Option(m.text, m.value));
+                });
+
+                modeleSelect.disabled = false;
+            }
+
+            // Pré-remplir les finitions si un modèle est déjà sélectionné (cas Edit)
+            if (modeleSelect.value) {
+                let modeleId = modeleSelect.value;
+                let listeFinitions = finitionsParModele[modeleId];
+
+                finitionSelect.innerHTML = "";
+                listeFinitions.forEach(f => {
+                    finitionSelect.appendChild(new Option(f.text, f.value));
+                });
+
+                finitionSelect.disabled = false;
+            }
+
+            // Gestion des changements
+            marqueSelect.addEventListener('change', function () {
+                let marqueId = this.value;
+
+                modeleSelect.innerHTML = '<option value="">Sélectionnez un modèle</option>';
+                finitionSelect.innerHTML = "";
+                finitionSelect.disabled = true;
+
+                if (marqueId) {
+                    let listeModeles = modelesParMarque[marqueId];
+                    listeModeles.forEach(m => {
+                        modeleSelect.appendChild(new Option(m.text, m.value));
+                    });
+                    modeleSelect.disabled = false;
+                } else {
+                    modeleSelect.disabled = true;
+                }
+            });
+
+            modeleSelect.addEventListener('change', function () {
+                let modeleId = this.value;
+
+                finitionSelect.innerHTML = '<option value="">Sélectionnez une finition</option>';
+
+                if (modeleId) {
+                    let listeFinitions = finitionsParModele[modeleId];
+                    listeFinitions.forEach(f => {
+                        finitionSelect.appendChild(new Option(f.text, f.value));
+                    });
+                    finitionSelect.disabled = false;
+                } else {
+                    finitionSelect.disabled = true;
+                }
+            });
+        });
+    </script>
 }
